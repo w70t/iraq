@@ -1,0 +1,1030 @@
+# 🤖 Telegram Video Downloader Bot
+
+بوت تيليجرام لتحميل الفيديوهات والصور من جميع المنصات الشهيرة مع نظام اشتراكات متكامل.
+
+A Telegram bot for downloading videos and photos from all popular platforms with a complete subscription system.
+
+---
+
+## 📋 المميزات | Features
+
+- ✅ تحميل من YouTube, Facebook, Instagram, TikTok, Twitter/X, Pinterest, Reddit, Snapchat
+- ✅ دعم الفيديوهات حتى 2GB (4GB لمستخدمي Premium)
+- ✅ جودات متعددة (1080p, 720p, 480p, MP3)
+- ✅ تحميل ستوري Instagram (صور + فيديوهات)
+- ✅ تحميل صور TikTok (Slideshows)
+- ✅ نظام اشتراكات مع طرق دفع متعددة
+- ✅ لوحة تحكم قوية للمدير
+- ✅ حظر المحتوى الإباحي تلقائياً (قابل للتحكم)
+- ✅ إدارة روابط محظورة مخصصة
+- ✅ دعم اللغتين العربية والإنجليزية
+- ✅ نظام Cookies للمنصات المحمية
+- ✅ قنوات سجلات (فيديوهات، أخطاء، أعضاء جدد)
+- ✅ دعم المجموعات مع إعدادات مخصصة
+- ✅ حد يومي للتحميلات (قابل للتخصيص)
+
+---
+
+## 📦 المتطلبات الأساسية | Requirements
+
+### نظام التشغيل
+- Ubuntu/Debian Linux (موصى به)
+- أو أي نظام Linux آخر
+- أو **Raspberry Pi** (Raspberry Pi OS)
+
+### البرامج المطلوبة
+| البرنامج | الوصف |
+|----------|-------|
+| Python 3.8+ | لغة البرمجة |
+| PostgreSQL 12+ | قاعدة البيانات |
+| FFmpeg | لمعالجة الفيديو |
+| pip3 | مدير حزم Python |
+
+---
+
+## 🍓 التثبيت على Raspberry Pi | Raspberry Pi Installation
+
+> هذا القسم خاص بـ **Raspberry Pi** فقط. إذا كنت تستخدم Linux عادي، انتقل للقسم التالي.
+
+### ✅ الأجهزة المدعومة
+| الجهاز | الدعم | ملاحظات |
+|--------|-------|---------|
+| **Raspberry Pi 5 (8GB)** | ✅✅ **الأفضل** | أداء ممتاز، يدعم فيديوهات كبيرة جداً |
+| Raspberry Pi 5 (4GB) | ✅✅ ممتاز | أداء ممتاز |
+| Raspberry Pi 4 (4GB+) | ✅ ممتاز | موصى به |
+| Raspberry Pi 4 (2GB) | ✅ جيد | قد يبطئ مع فيديوهات كبيرة |
+| Raspberry Pi 3B+ | ⚠️ مقبول | بطيء مع الفيديوهات الكبيرة |
+| Raspberry Pi Zero 2 W | ⚠️ محدود | للاستخدام الخفيف فقط |
+
+### 🔹 الخطوة 1: تحديث Raspberry Pi OS
+
+```bash
+# تحديث النظام
+sudo apt update && sudo apt full-upgrade -y
+
+# إعادة التشغيل (مهم بعد التحديث)
+sudo reboot
+```
+
+### 🔹 الخطوة 2: تثبيت المتطلبات
+
+```bash
+# تثبيت Python و pip
+sudo apt install -y python3 python3-pip python3-venv
+
+# تثبيت PostgreSQL
+sudo apt install -y postgresql postgresql-contrib
+
+# تثبيت FFmpeg
+sudo apt install -y ffmpeg
+
+# تثبيت أدوات التطوير (مهمة لبعض المكتبات)
+sudo apt install -y build-essential libpq-dev python3-dev
+
+# تثبيت git
+sudo apt install -y git
+```
+
+### 🔹 الخطوة 3: نقل المشروع إلى Raspberry Pi
+
+**الطريقة 1: نسخ عبر USB**
+```bash
+# بعد توصيل USB
+sudo mount /dev/sda1 /mnt
+cp -r /mnt/iraq ~/bot
+sudo umount /mnt
+cd ~/bot
+```
+
+**الطريقة 2: نسخ عبر SSH (من كمبيوترك)**
+```bash
+# على كمبيوترك (ليس Raspberry Pi)
+scp -r iraq.zip pi@raspberrypi.local:~/
+
+# على Raspberry Pi
+unzip iraq.zip
+cd iraq
+```
+
+**الطريقة 3: استنساخ من GitHub**
+```bash
+git clone https://github.com/YOUR_USERNAME/bot.git
+cd bot
+```
+
+### 🔹 الخطوة 4: تثبيت مكتبات Python
+
+```bash
+# إنشاء بيئة افتراضية (موصى به جداً على Pi)
+python3 -m venv venv
+source venv/bin/activate
+
+# تثبيت المكتبات
+pip3 install -r requirements.txt
+
+# تحديث yt-dlp
+pip3 install -U yt-dlp
+```
+
+> ⚠️ **ملاحظة:** تثبيت `tgcrypto` قد يستغرق 5-10 دقائق على Raspberry Pi لأنه يُبنى من المصدر.
+
+### 🔹 الخطوة 5: إعداد PostgreSQL على Raspberry Pi
+
+```bash
+# بدء الخدمة
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# إنشاء المستخدم وقاعدة البيانات
+sudo -u postgres psql
+```
+
+```sql
+CREATE USER bot_user WITH PASSWORD 'كلمة_مرور_قوية';
+CREATE DATABASE telegram_bot;
+GRANT ALL PRIVILEGES ON DATABASE telegram_bot TO bot_user;
+\q
+```
+
+```bash
+# منح الصلاحيات
+sudo -u postgres psql -d telegram_bot
+```
+
+```sql
+GRANT ALL ON SCHEMA public TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO bot_user;
+\q
+```
+
+```bash
+# إنشاء الجداول
+python3 setup_postgres.py
+```
+
+### 🔹 الخطوة 6: تكوين ملف .env
+
+```bash
+cp env.example .env
+nano .env
+```
+
+أضف معلوماتك كما هو موضح في قسم "تكوين ملف .env" أدناه.
+
+### 🔹 الخطوة 7: استعادة النسخة الاحتياطية (إذا كان لديك واحدة)
+
+```bash
+# انسخ ملف النسخة الاحتياطية إلى Raspberry Pi ثم:
+sudo -u postgres psql -d telegram_bot < backup_postgres_XXXXXXXX.sql
+```
+
+### 🔹 الخطوة 8: تشغيل البوت 24/7 على Raspberry Pi
+
+**إنشاء خدمة systemd:**
+
+```bash
+sudo nano /etc/systemd/system/telegram-bot.service
+```
+
+**أضف المحتوى التالي:**
+
+```ini
+[Unit]
+Description=Telegram Video Downloader Bot
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/bot
+ExecStart=/home/pi/bot/venv/bin/python3 bot.py
+Restart=always
+RestartSec=10
+Environment=PATH=/home/pi/bot/venv/bin:/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=multi-user.target
+```
+
+> ⚠️ **غيّر:**
+> - `User=pi` لاسم المستخدم الخاص بك
+> - `/home/pi/bot` بمسار المشروع الفعلي
+
+**تفعيل وتشغيل الخدمة:**
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable telegram-bot
+sudo systemctl start telegram-bot
+sudo systemctl status telegram-bot
+```
+
+### ⚡ تحسينات الأداء لـ Raspberry Pi
+
+```bash
+# 1. زيادة مساحة Swap (مهم للفيديوهات الكبيرة)
+sudo dphys-swapfile swapoff
+sudo nano /etc/dphys-swapfile
+# غيّر CONF_SWAPSIZE=100 إلى CONF_SWAPSIZE=2048
+sudo dphys-swapfile setup
+sudo dphys-swapfile swapon
+
+# 2. تقليل استخدام الذاكرة للـ GPU
+sudo raspi-config
+# اذهب إلى: Performance Options > GPU Memory > 16
+
+# 3. تعطيل الواجهة الرسومية (إذا لم تحتاجها)
+sudo systemctl set-default multi-user.target
+
+# إعادة التشغيل لتطبيق التغييرات
+sudo reboot
+```
+
+### 🔧 أخطاء شائعة على Raspberry Pi
+
+#### ❌ خطأ: "error: externally-managed-environment"
+
+**الحل:** استخدم بيئة افتراضية:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+#### ❌ خطأ: ذاكرة غير كافية أثناء التثبيت
+
+**الحل:** زيادة Swap:
+```bash
+sudo dphys-swapfile swapoff
+sudo sed -i 's/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=2048/' /etc/dphys-swapfile
+sudo dphys-swapfile setup
+sudo dphys-swapfile swapon
+```
+
+#### ❌ خطأ: البوت بطيء جداً
+
+**الحلول:**
+1. تأكد من استخدام Raspberry Pi 4 (4GB+)
+2. قلل حد حجم الفيديو في إعدادات البوت
+3. أغلق البرامج الأخرى
+
+#### ❌ خطأ: PostgreSQL لا يعمل
+
+**الحل:**
+```bash
+sudo systemctl restart postgresql
+sudo systemctl status postgresql
+```
+
+---
+
+## ⚙️ التثبيت خطوة بخطوة | Installation
+
+### 🔹 الخطوة 1: تحديث النظام وتثبيت المتطلبات
+
+```bash
+# تحديث النظام
+sudo apt update && sudo apt upgrade -y
+
+# تثبيت Python و pip
+sudo apt install -y python3 python3-pip python3-venv
+
+# تثبيت PostgreSQL
+sudo apt install -y postgresql postgresql-contrib
+
+# تثبيت FFmpeg (مهم جداً لمعالجة الفيديو)
+sudo apt install -y ffmpeg
+
+# تثبيت git (اختياري لاستنساخ المشروع)
+sudo apt install -y git
+```
+
+### 🔹 الخطوة 2: استنساخ المشروع (إذا كنت تحمل من GitHub)
+
+```bash
+git clone https://github.com/YOUR_USERNAME/bot-download-videos.git
+cd bot-download-videos
+```
+
+أو قم بفك ضغط الملف المضغوط إذا حصلت عليه بطريقة أخرى.
+
+### 🔹 الخطوة 3: إنشاء بيئة افتراضية (اختياري لكن موصى به)
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 🔹 الخطوة 4: تثبيت مكتبات Python
+
+```bash
+pip3 install -r requirements.txt
+```
+
+**المكتبات التي سيتم تثبيتها:**
+| المكتبة | الوظيفة |
+|---------|---------|
+| `pyrogram` | واجهة برمجة Telegram |
+| `tgcrypto` | تشفير سريع لـ Telegram |
+| `python-dotenv` | قراءة ملف `.env` |
+| `psycopg2-binary` | الاتصال بـ PostgreSQL |
+| `yt-dlp` | تحميل الفيديوهات من معظم المنصات |
+| `gallery-dl` | تحميل الصور والستوريهات |
+| `instaloader` | تحميل ستوري Instagram |
+| `requests` | طلبات HTTP |
+
+### 🔹 الخطوة 5: تثبيت أدوات إضافية (ترقية)
+
+```bash
+# تحديث yt-dlp لأحدث إصدار
+pip3 install -U yt-dlp
+
+# تحديث gallery-dl
+pip3 install -U gallery-dl
+```
+
+---
+
+## 🐘 إعداد PostgreSQL | PostgreSQL Setup
+
+### 🔹 الخطوة 1: بدء خدمة PostgreSQL
+
+```bash
+# بدء الخدمة
+sudo systemctl start postgresql
+
+# تفعيل التشغيل التلقائي
+sudo systemctl enable postgresql
+```
+
+### 🔹 الخطوة 2: إنشاء المستخدم وقاعدة البيانات
+
+```bash
+# الدخول لـ PostgreSQL
+sudo -u postgres psql
+```
+
+**ستظهر لك موجه الأوامر:** `postgres=#`
+
+**انسخ والصق الأوامر التالية:**
+
+```sql
+-- إنشاء مستخدم (غيّر 'YOUR_PASSWORD' بكلمة مرور قوية!)
+CREATE USER bot_user WITH PASSWORD 'YOUR_PASSWORD';
+
+-- إنشاء قاعدة البيانات
+CREATE DATABASE telegram_bot;
+
+-- منح الصلاحيات
+GRANT ALL PRIVILEGES ON DATABASE telegram_bot TO bot_user;
+
+-- الخروج
+\q
+```
+
+> ⚠️ **مهم جداً:** احفظ كلمة المرور! ستحتاجها لاحقاً في ملف `.env`
+
+### 🔹 الخطوة 3: منح صلاحيات إضافية
+
+```bash
+sudo -u postgres psql -d telegram_bot
+```
+
+```sql
+GRANT ALL ON SCHEMA public TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO bot_user;
+\q
+```
+
+### 🔹 الخطوة 4: إنشاء جداول قاعدة البيانات
+
+```bash
+python3 setup_postgres.py
+```
+
+**يجب أن ترى:**
+```
+🔧 إنشاء الجداول...
+✅ جدول users
+✅ جدول settings
+✅ جدول payments
+✅ جدول daily_downloads
+✅ جدول blocked_urls
+✅ الإعدادات الافتراضية
+✅ Indexes
+
+✅ تم إنشاء جميع الجداول بنجاح!
+```
+
+---
+
+## 🔐 تكوين ملف .env | Environment Configuration
+
+### 🔹 الخطوة 1: نسخ ملف المثال
+
+```bash
+cp env.example .env
+```
+
+### 🔹 الخطوة 2: تحرير ملف .env
+
+```bash
+nano .env
+```
+
+### 🔹 الخطوة 3: ملء المتغيرات
+
+```env
+# ═══════════════════════════════════════════════════════════
+# Telegram Bot Configuration - إعداد البوت
+# ═══════════════════════════════════════════════════════════
+
+# 🔑 احصل على API_ID و API_HASH من: https://my.telegram.org/apps
+PYROGRAM_API_ID=12345678
+PYROGRAM_API_HASH=0123456789abcdef0123456789abcdef
+
+# 🤖 احصل على BOT_TOKEN من: @BotFather
+BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
+
+# ═══════════════════════════════════════════════════════════
+# Admin Configuration - معلومات المدير
+# ═══════════════════════════════════════════════════════════
+
+# 👤 رقمك التعريفي (احصل عليه من @userinfobot)
+ADMIN_ID=123456789
+
+# ═══════════════════════════════════════════════════════════
+# PostgreSQL Database - قاعدة البيانات
+# ═══════════════════════════════════════════════════════════
+
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=telegram_bot
+POSTGRES_USER=bot_user
+POSTGRES_PASSWORD=YOUR_PASSWORD  # <-- كلمة المرور التي أنشأتها
+
+# ═══════════════════════════════════════════════════════════
+# Log Channels - قنوات السجلات (اختياري)
+# ═══════════════════════════════════════════════════════════
+
+# قناة سجلات تحميل الفيديوهات
+LOG_CHANNEL_ID=-1001234567890
+
+# قناة سجلات الأخطاء
+ERROR_LOG_CHANNEL_ID=-1001234567890
+
+# قناة إشعارات الأعضاء الجدد
+NEW_MEMBERS_CHANNEL_ID=-1001234567890
+```
+
+**كيف تحصل على المعلومات المطلوبة:**
+
+| المتغير | كيفية الحصول عليه |
+|---------|-------------------|
+| `PYROGRAM_API_ID` | اذهب إلى https://my.telegram.org/apps وأنشئ تطبيق |
+| `PYROGRAM_API_HASH` | نفس الموقع أعلاه |
+| `BOT_TOKEN` | من @BotFather في Telegram |
+| `ADMIN_ID` | أرسل /start لـ @userinfobot |
+| `LOG_CHANNEL_ID` | ID قناتك الخاصة (رقم سالب) |
+
+**💡 للحصول على ID القناة:**
+1. أنشئ قناة خاصة في Telegram
+2. أضف البوت كمدير في القناة
+3. أرسل رسالة في القناة
+4. استخدم @getidsbot لمعرفة ID القناة
+
+### 🔹 الخطوة 4: حفظ الملف
+
+اضغط `Ctrl+X` ثم `Y` ثم `Enter`
+
+---
+
+## 🚀 تشغيل البوت | Running the Bot
+
+### التشغيل العادي (للاختبار)
+
+```bash
+python3 bot.py
+```
+
+**يجب أن ترى:**
+```
+✅ تم تهيئة قاعدة البيانات
+✅ البوت يعمل الآن...
+```
+
+### إيقاف البوت (Ctrl+C)
+
+اضغط `Ctrl+C` لإيقاف البوت.
+
+---
+
+## 🔄 تشغيل البوت 24/7 | Running 24/7
+
+### الطريقة 1: استخدام systemd (الأفضل)
+
+#### 🔹 إنشاء ملف الخدمة
+
+```bash
+sudo nano /etc/systemd/system/telegram-bot.service
+```
+
+#### 🔹 أضف المحتوى التالي
+
+```ini
+[Unit]
+Description=Telegram Video Downloader Bot
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/bot-download-videos
+ExecStart=/usr/bin/python3 bot.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/telegram-bot/bot.log
+StandardError=append:/var/log/telegram-bot/error.log
+
+[Install]
+WantedBy=multi-user.target
+```
+
+> ⚠️ **غيّر:**
+> - `YOUR_USERNAME` باسم المستخدم الخاص بك
+> - `/path/to/bot-download-videos` بالمسار الفعلي للمشروع
+
+#### 🔹 إنشاء مجلد السجلات
+
+```bash
+sudo mkdir -p /var/log/telegram-bot
+sudo chown $USER:$USER /var/log/telegram-bot
+```
+
+#### 🔹 تفعيل وتشغيل الخدمة
+
+```bash
+# إعادة تحميل systemd
+sudo systemctl daemon-reload
+
+# تفعيل التشغيل التلقائي
+sudo systemctl enable telegram-bot
+
+# تشغيل البوت
+sudo systemctl start telegram-bot
+
+# التحقق من الحالة
+sudo systemctl status telegram-bot
+```
+
+### الطريقة 2: استخدام screen
+
+```bash
+# تثبيت screen
+sudo apt install screen
+
+# إنشاء جلسة جديدة
+screen -S bot
+
+# تشغيل البوت
+python3 bot.py
+
+# للخروج من الجلسة مع إبقاء البوت يعمل
+# اضغط: Ctrl+A ثم D
+
+# للعودة للجلسة
+screen -r bot
+```
+
+### الطريقة 3: استخدام nohup
+
+```bash
+# تشغيل في الخلفية
+nohup python3 bot.py > bot.log 2>&1 &
+
+# لمعرفة PID
+pgrep -f "python3 bot.py"
+```
+
+---
+
+## 📊 أوامر إدارة البوت | Management Commands
+
+### عند استخدام systemd
+
+| الأمر | الوظيفة |
+|-------|---------|
+| `sudo systemctl start telegram-bot` | تشغيل البوت |
+| `sudo systemctl stop telegram-bot` | إيقاف البوت |
+| `sudo systemctl restart telegram-bot` | إعادة تشغيل البوت |
+| `sudo systemctl status telegram-bot` | حالة البوت |
+| `sudo systemctl enable telegram-bot` | تفعيل التشغيل التلقائي |
+| `sudo systemctl disable telegram-bot` | تعطيل التشغيل التلقائي |
+
+### عرض السجلات
+
+```bash
+# سجلات البوت
+sudo journalctl -u telegram-bot -f
+
+# أو من ملف السجل
+tail -f /var/log/telegram-bot/bot.log
+
+# سجلات الأخطاء
+tail -f /var/log/telegram-bot/error.log
+
+# سجلات البوت المحلية
+tail -f bot_standalone.log
+```
+
+### عند استخدام nohup
+
+| الأمر | الوظيفة |
+|-------|---------|
+| `pgrep -f "python3 bot.py"` | معرفة PID |
+| `pkill -f "python3 bot.py"` | إيقاف البوت |
+| `tail -f bot.log` | عرض السجلات |
+
+### عند استخدام screen
+
+| الأمر | الوظيفة |
+|-------|---------|
+| `screen -r bot` | الدخول للجلسة |
+| `screen -ls` | عرض الجلسات |
+| `Ctrl+A ثم D` | الخروج من الجلسة |
+| `Ctrl+C` (داخل الجلسة) | إيقاف البوت |
+
+---
+
+## 🍪 إعداد Cookies (اختياري) | Cookies Setup
+
+بعض المنصات تتطلب تسجيل دخول. يمكنك إضافة Cookies من المتصفح.
+
+### الخطوة 1: إنشاء مجلد Cookies
+
+```bash
+mkdir -p cookies
+```
+
+### الخطوة 2: تصدير Cookies من المتصفح
+
+1. ثبت إضافة "Get cookies.txt LOCALLY" في Chrome/Firefox
+2. سجل دخول للمنصة المطلوبة
+3. انقر على الإضافة واختر "Export"
+4. احفظ الملف بالاسم المناسب:
+
+| المنصة | اسم الملف |
+|--------|-----------|
+| Instagram | `cookies/instagram.txt` |
+| Facebook | `cookies/facebook.txt` |
+| YouTube | `cookies/youtube.txt` |
+| TikTok | `cookies/tiktok.txt` |
+| Twitter | `cookies/twitter.txt` |
+| Pinterest | `cookies/pinterest.txt` |
+
+> ⚠️ لا ترفع ملفات Cookies إلى GitHub!
+
+---
+
+## 🔧 استكشاف الأخطاء | Troubleshooting
+
+### ❌ خطأ: "FATAL: password authentication failed"
+
+**السبب:** كلمة مرور PostgreSQL خاطئة
+
+**الحل:**
+```bash
+# إعادة تعيين كلمة المرور
+sudo -u postgres psql
+ALTER USER bot_user WITH PASSWORD 'new_password';
+\q
+
+# ثم حدث .env
+nano .env
+```
+
+---
+
+### ❌ خطأ: "FATAL: database does not exist"
+
+**السبب:** قاعدة البيانات غير موجودة
+
+**الحل:**
+```bash
+sudo -u postgres psql
+CREATE DATABASE telegram_bot;
+GRANT ALL PRIVILEGES ON DATABASE telegram_bot TO bot_user;
+\q
+```
+
+---
+
+### ❌ خطأ: "permission denied for schema public"
+
+**السبب:** صلاحيات غير كافية
+
+**الحل:**
+```bash
+sudo -u postgres psql -d telegram_bot
+GRANT ALL ON SCHEMA public TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO bot_user;
+\q
+```
+
+---
+
+### ❌ خطأ: "could not connect to server"
+
+**السبب:** خدمة PostgreSQL غير مشغلة
+
+**الحل:**
+```bash
+sudo systemctl start postgresql
+sudo systemctl status postgresql
+```
+
+---
+
+### ❌ خطأ: "No module named 'pyrogram'"
+
+**السبب:** المكتبات غير مثبتة
+
+**الحل:**
+```bash
+pip3 install -r requirements.txt
+```
+
+---
+
+### ❌ خطأ: "FileNotFoundError: gallery-dl"
+
+**السبب:** gallery-dl غير مثبت
+
+**الحل:**
+```bash
+pip3 install gallery-dl
+# أو
+pip3 install -U gallery-dl
+```
+
+---
+
+### ❌ خطأ: "ModuleNotFoundError: No module named 'instaloader'"
+
+**السبب:** instaloader غير مثبت
+
+**الحل:**
+```bash
+pip3 install instaloader
+```
+
+---
+
+### ❌ خطأ: yt-dlp لا يعمل مع بعض المنصات
+
+**السبب:** نسخة قديمة
+
+**الحل:**
+```bash
+pip3 install -U yt-dlp
+```
+
+---
+
+### ❌ خطأ: "PEER_ID_INVALID" للقنوات
+
+**السبب:** البوت لم يتفاعل مع القناة بعد
+
+**الحل:**
+1. أضف البوت كمدير في القناة
+2. أرسل أي رسالة في القناة
+3. أعد تشغيل البوت
+
+---
+
+### ❌ البوت لا يرسل للقنوات
+
+**السبب:** البوت ليس مدير أو لا يملك صلاحيات
+
+**الحل:**
+- تأكد أن البوت مدير في القناة
+- تأكد أن البوت يملك صلاحية "إرسال رسائل"
+
+---
+
+## 📱 أوامر البوت | Bot Commands
+
+### للمستخدمين
+| الأمر | الوظيفة |
+|-------|---------|
+| `/start` | بدء البوت |
+| `/help` | المساعدة |
+| `/language` | تغيير اللغة |
+| `/subscribe` | الاشتراك |
+| `/mystatus` | حالة الاشتراك |
+
+### للمدير
+| الأمر | الوظيفة |
+|-------|---------|
+| `/admin` | لوحة التحكم |
+| `/stats` | الإحصائيات |
+| `/logs` | السجلات |
+| `/broadcast` | رسالة جماعية |
+| `/update_ytdlp` | تحديث yt-dlp |
+
+---
+
+## 📁 هيكل المشروع | Project Structure
+
+```
+bot-download-videos/
+├── 📄 bot.py                 # ملف البوت الرئيسي
+├── 📄 subscription_db.py     # نظام قاعدة البيانات والاشتراكات
+├── 📄 translations.py        # ترجمات اللغات
+├── 📄 queue_manager.py       # إدارة قائمة الانتظار
+├── 📄 pg_backup.py           # نسخ احتياطي لقاعدة البيانات
+├── 📄 setup_postgres.py      # إعداد جداول PostgreSQL
+├── 📄 requirements.txt       # المكتبات المطلوبة
+├── 📄 env.example            # مثال ملف الإعدادات
+├── 📄 .gitignore            # الملفات المتجاهلة من Git
+├── 📁 cookies/               # ملفات Cookies (لا ترفعها!)
+│   ├── instagram.txt
+│   ├── facebook.txt
+│   └── ...
+└── 📁 downloads/             # ملفات التحميل المؤقتة
+```
+
+---
+
+## 💾 النسخ الاحتياطي والاستعادة | Backup & Restore
+
+### 📋 ما هو ملف النسخ الاحتياطي؟
+
+ملف `.sql` يحتوي على جميع بيانات قاعدة البيانات:
+- الأعضاء المسجلين
+- الإعدادات
+- سجلات الدفوعات
+- الروابط المحظورة
+
+### 📥 أين أضع ملف النسخ الاحتياطي؟
+
+ضع ملف `.sql` (مثل `backup_postgres_20251207_134242.sql`) في:
+```
+المجلد الرئيسي للمشروع/
+├── backup_postgres_XXXXXXXX.sql  ← هنا!
+├── bot.py
+├── .env
+└── ...
+```
+
+أو أي مكان تريده، المهم تعرف المسار.
+
+### 🔄 استعادة البيانات من النسخ الاحتياطي
+
+#### الطريقة 1: خطوة بخطوة (للمبتدئين)
+
+```bash
+# 1. أولاً، أنشئ قاعدة البيانات الجديدة (إذا لم تكن موجودة)
+sudo -u postgres psql
+CREATE DATABASE telegram_bot;
+CREATE USER bot_user WITH PASSWORD 'كلمة_المرور';
+GRANT ALL PRIVILEGES ON DATABASE telegram_bot TO bot_user;
+\q
+
+# 2. امنح الصلاحيات الإضافية
+sudo -u postgres psql -d telegram_bot
+GRANT ALL ON SCHEMA public TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO bot_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO bot_user;
+\q
+
+# 3. استعادة البيانات من ملف النسخ الاحتياطي
+# استبدل "backup_file.sql" باسم ملفك الفعلي
+sudo -u postgres psql -d telegram_bot < backup_file.sql
+```
+
+#### الطريقة 2: أوامر مباشرة
+
+```bash
+# إذا كان الملف في مجلد المشروع
+cd "/path/to/bot-download-videos"
+sudo -u postgres psql -d telegram_bot < backup_postgres_20251207_134242.sql
+
+# أو إذا كان الملف في مكان آخر
+sudo -u postgres psql -d telegram_bot < /path/to/backup_file.sql
+```
+
+### ✅ التحقق من نجاح الاستعادة
+
+```bash
+# الدخول لقاعدة البيانات
+sudo -u postgres psql -d telegram_bot
+
+# عرض الجداول
+\dt
+
+# عرض عدد الأعضاء
+SELECT COUNT(*) FROM users;
+
+# عرض الإعدادات
+SELECT * FROM settings;
+
+# الخروج
+\q
+```
+
+### 📤 إنشاء نسخة احتياطية جديدة
+
+```bash
+# نسخ احتياطي يدوي
+pg_dump -U bot_user -h localhost telegram_bot > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# أو عبر البوت
+# من لوحة التحكم ← نسخ احتياطي
+```
+
+### 🔐 تغيير كلمة مرور PostgreSQL
+
+```bash
+# 1. الدخول لـ PostgreSQL
+sudo -u postgres psql
+
+# 2. تغيير كلمة المرور
+ALTER USER bot_user WITH PASSWORD 'كلمة_المرور_الجديدة';
+
+# 3. الخروج
+\q
+
+# 4. تحديث ملف .env بكلمة المرور الجديدة
+nano .env
+# غيّر سطر: POSTGRES_PASSWORD=كلمة_المرور_الجديدة
+```
+
+### ⚠️ ملاحظات مهمة
+
+1. **لا تستعيد نسخة على قاعدة بيانات فيها بيانات** - ستُحذف البيانات القديمة
+2. **احفظ النسخ الاحتياطية في مكان آمن** - خارج المشروع
+3. **لا ترفع ملفات `.sql` إلى GitHub** - تحتوي على بيانات المستخدمين
+
+---
+
+## 🔒 الأمان | Security
+
+> ⚠️ **تحذيرات أمنية:**
+
+1. **لا تشارك ملف `.env` أبداً** - يحتوي على كلمات المرور
+2. **لا ترفع ملفات Cookies** - تحتوي على جلسات تسجيل الدخول
+3. **لا ترفع ملفات `.session`** - تحتوي على جلسة البوت
+4. **استخدم كلمات مرور قوية** لقاعدة البيانات
+
+---
+
+## 📈 التحديثات | Updates
+
+### تحديث yt-dlp
+
+```bash
+pip3 install -U yt-dlp
+```
+
+### تحديث جميع المكتبات
+
+```bash
+pip3 install -U -r requirements.txt
+```
+
+### تحديث البوت من GitHub
+
+```bash
+git pull origin main
+pip3 install -r requirements.txt
+sudo systemctl restart telegram-bot
+```
+
+---
+
+## 📜 الترخيص | License
+
+MIT License
+
+---
+
+## 👨‍💻 المطور | Developer
+
+تم التطوير بواسطة **Wahab**
+
+---
+
+## 🆘 الدعم | Support
+
+إذا واجهت أي مشكلة:
+1. راجع قسم "استكشاف الأخطاء"
+2. تحقق من السجلات: `tail -f bot_standalone.log`
+3. تأكد من تشغيل PostgreSQL: `sudo systemctl status postgresql`
+
+---
+
+**🎉 استمتع بالبوت!**
